@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Depression Screening Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .question h3 {
+            margin-bottom: 10px;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Depression Screening Test</h1>
+    <p>For each question, select the option that best describes how you've felt over the past two weeks.</p>
+
+    <div id="questionnaire"></div>
+    <button id="calculateBtn" disabled>Calculate Score</button>
+    <div id="result"></div>
+
+    <script>
+        const questions = [
+            "Little interest or pleasure in doing things?",
+            "Feeling down, depressed, or hopeless?",
+            "Trouble falling or staying asleep, or sleeping too much?",
+            "Feeling tired or having little energy?",
+            "Poor appetite or overeating?",
+            "Feeling bad about yourself — or that you are a failure or have let yourself or your family down?",
+            "Trouble concentrating on things, such as reading the newspaper or watching television?",
+            "Moving or speaking so slowly that other people could have noticed? Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual?",
+            "Thoughts that you would be better off dead or thoughts of hurting yourself?",
+            "Difficulty carrying out daily activities (e.g., work, home, or social life) due to any of the above issues?"
+        ];
+
+        const options = [
+            { label: "Not at all", value: 0 },
+            { label: "Several days", value: 1 },
+            { label: "More than half the days", value: 2 },
+            { label: "Nearly every day", value: 3 }
+        ];
+
+        const questionnaire = document.getElementById('questionnaire');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultDiv = document.getElementById('result');
+
+        // Create questionnaire
+        questions.forEach((question, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+
+            const questionTitle = document.createElement('h3');
+            questionTitle.textContent = `${index + 1}. ${question}`;
+            questionDiv.appendChild(questionTitle);
+
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options';
+
+            options.forEach(option => {
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `question${index}`;
+                radio.value = option.value;
+                radio.id = `q${index}-${option.value}`;
+
+                const label = document.createElement('label');
+                label.htmlFor = `q${index}-${option.value}`;
+                label.textContent = option.label;
+
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(radio);
+                wrapper.appendChild(label);
+                optionsDiv.appendChild(wrapper);
+            });
+
+            questionDiv.appendChild(optionsDiv);
+            questionnaire.appendChild(questionDiv);
+        });
+
+        // Validate and enable/disable calculate button
+        questionnaire.addEventListener('change', () => {
+            const allAnswered = questions.every((_, index) =>
+                document.querySelector(`input[name="question${index}"]:checked`)
+            );
+            calculateBtn.disabled = !allAnswered;
+        });
+
+        // Calculate score
+        calculateBtn.addEventListener('click', () => {
+            const score = questions.reduce((sum, _, index) => {
+                const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+                return sum + (selectedOption ? parseInt(selectedOption.value) : 0);
+            }, 0);
+
+            // Interpret score
+            let interpretation = '';
+            if (score >= 0 && score <= 4) interpretation = "Minimal or no depression";
+            else if (score >= 5 && score <= 9) interpretation = "Mild depression";
+            else if (score >= 10 && score <= 14) interpretation = "Moderate depression";
+            else if (score >= 15 && score <= 19) interpretation = "Moderately severe depression";
+            else if (score >= 20 && score <= 27) interpretation = "Severe depression";
+            else interpretation = "Invalid score";
+
+            // Display result
+            resultDiv.innerHTML = `
+                <h3>Your Score: ${score}</h3>
+                <p><strong>Interpretation:</strong> ${interpretation}</p>
+                <p><strong>Important Note:</strong> If you score 10 or higher or experience persistent suicidal thoughts, consult a healthcare professional immediately. This test is not a substitute for professional advice.</p>
+            `;
+        });
+    </script>
+</body>
+
+</html>
